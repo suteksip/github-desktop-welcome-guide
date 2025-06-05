@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Connected Notes - Graph View</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+<body class="bg-gray-50">
+  <!-- Navigation -->
+  <nav class="bg-white shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16 items-center">
+        <div class="flex items-center space-x-4">
+          <h1 class="text-xl font-semibold text-gray-900">Connected Notes</h1>
+          <!-- Navigation Links -->
+          <a href="index.html" class="text-gray-600 hover:text-gray-800 text-sm">Notes</a>
+          <span class="text-gray-900 text-sm font-medium">Graph</span>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section with Image -->
+  <section class="relative">
+    <img src="https://images.pexels.com/photos/256541/pexels-photo-256541.jpeg?auto=compress&cs=tinysrgb&w=1600" alt="Graph Visualization" class="w-full h-64 object-cover rounded-b-md shadow-sm" />
+    <div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+      <h2 class="text-white text-3xl font-bold">Interactive Graph View</h2>
+    </div>
+  </section>
+
+  <!-- Main Content Area -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Optional Instructions -->
+    <div class="mb-4">
+      <p class="text-gray-700">Click on a node to highlight it and see the associated note preview.</p>
+    </div>
+
+    <!-- Graph Canvas -->
+    <div class="bg-white shadow-sm rounded-lg p-6">
+      <!-- The canvas element where the graph will render -->
+      <canvas id="graph-view" class="w-full border rounded-md"></canvas>
+    </div>
+
+    <!-- Optional Back Button -->
+    <div class="mt-6">
+      <a href="index.html" class="inline-block bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors">
+        ← Back to Notes
+      </a>
+    </div>
+  </main>
+
+  <!-- Script Inclusions -->
+  <script src="js/helpers.js"></script>
+  <script src="js/noteModel.js"></script>
+  <script src="js/graph.js"></script>
+</body>
+</html>
