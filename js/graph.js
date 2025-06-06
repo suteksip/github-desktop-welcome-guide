@@ -1,26 +1,24 @@
 class Graph {
     constructor() {
-        this.canvas = document.getElementById('graph-view');
-        if (!this.canvas) {
-            console.error('Graph canvas element not found on this page.');
-            return;
-        }
-        this.ctx = this.canvas.getContext('2d');
-        this.nodes = new Map(); // Map of note id to position
-        this.isVisible = true;
-        this.initializeCanvas();
-        this.setupEventListeners();
+        document.addEventListener('DOMContentLoaded', () => {
+            this.canvas = document.getElementById('graph-view');
+            if (!this.canvas) {
+                console.error('Graph canvas element not found on this page.');
+                return;
+            }
+            this.ctx = this.canvas.getContext('2d');
+            this.nodes = new Map(); // Map of note id to position
+            this.isVisible = true;
+            this.initializeCanvas();
+            this.setupEventListeners();
+            this.updateGraph();
+        });
     }
 
     initializeCanvas() {
         const updateSize = () => {
-            const container = this.canvas.parentElement;
-            if (container) {
-                this.canvas.width = container.clientWidth;
-                this.canvas.height = 600; // Increased fixed height for better visibility
-                this.canvas.style.height = '600px'; // Ensure the canvas style height matches
-                this.canvas.style.display = 'block'; // Make sure canvas is visible
-            }
+            this.canvas.width = window.innerWidth;
+            this.canvas.height = window.innerHeight;
         };
 
         updateSize();
@@ -49,31 +47,35 @@ class Graph {
     }
 
     drawNode(x, y, note, isHighlighted = false) {
+        const isDarkMode = document.documentElement.classList.contains('dark');
+        
         this.ctx.beginPath();
-        this.ctx.arc(x, y, 8, 0, Math.PI * 2); // Increased node size for better visibility
-        this.ctx.fillStyle = isHighlighted ? '#4F46E5' : '#6B7280';
+        this.ctx.arc(x, y, 8, 0, Math.PI * 2);
+        this.ctx.fillStyle = isHighlighted ? '#4F46E5' : (isDarkMode ? '#6B7280' : '#9CA3AF');
         this.ctx.fill();
 
         // Draw note preview
-        this.ctx.font = '14px Inter'; // Increased font size
-        this.ctx.fillStyle = '#374151';
+        this.ctx.font = '14px Inter';
+        this.ctx.fillStyle = isDarkMode ? '#E5E7EB' : '#374151';
         const preview = note.content.substring(0, 20) + (note.content.length > 20 ? '...' : '');
         this.ctx.fillText(preview, x + 15, y + 5);
 
         // Draw hashtags if any
         if (note.hashtags.length > 0) {
             this.ctx.font = '12px Inter';
-            this.ctx.fillStyle = '#6B7280';
+            this.ctx.fillStyle = isDarkMode ? '#9CA3AF' : '#6B7280';
             this.ctx.fillText(note.hashtags.join(' '), x + 15, y + 25);
         }
     }
 
     drawEdge(startX, startY, endX, endY) {
+        const isDarkMode = document.documentElement.classList.contains('dark');
+        
         this.ctx.beginPath();
         this.ctx.moveTo(startX, startY);
         this.ctx.lineTo(endX, endY);
-        this.ctx.strokeStyle = '#E5E7EB';
-        this.ctx.lineWidth = 2; // Increased line width for better visibility
+        this.ctx.strokeStyle = isDarkMode ? '#374151' : '#E5E7EB';
+        this.ctx.lineWidth = 2;
         this.ctx.stroke();
     }
 
@@ -83,13 +85,15 @@ class Graph {
 
     updateGraph(highlightedNoteId = null) {
         if (!this.ctx) return;
+        
+        const isDarkMode = document.documentElement.classList.contains('dark');
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
         const notes = noteModel.notes;
         if (notes.length === 0) {
             // Display a friendly message when no notes exist
             this.ctx.font = '16px Inter';
-            this.ctx.fillStyle = '#9CA3AF';
+            this.ctx.fillStyle = isDarkMode ? '#6B7280' : '#9CA3AF';
             this.ctx.textAlign = 'center';
             this.ctx.fillText("No notes available", this.canvas.width / 2, this.canvas.height / 2);
             return;
@@ -97,7 +101,7 @@ class Graph {
 
         // Position nodes
         this.nodes.clear();
-        const padding = 100; // Increased padding for better spacing
+        const padding = 100;
         const availableWidth = this.canvas.width - padding * 2;
         const availableHeight = this.canvas.height - padding * 2;
 
@@ -136,11 +140,21 @@ class Graph {
     }
 }
 
-// Create a global instance only if the canvas exists
-if (document.getElementById('graph-view')) {
-    const graph = new Graph();
-    // Update the graph once the DOM is loaded
-    document.addEventListener('DOMContentLoaded', () => {
-        graph.updateGraph();
+// Create a global instance
+window.graph = new Graph();
+
+// Update graph when dark mode changes
+document.addEventListener('DOMContentLoaded', () => {
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.attributeName === 'class' && window.graph) {
+                window.graph.updateGraph();
+            }
+        });
     });
-}
+
+    observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class']
+    });
+});
