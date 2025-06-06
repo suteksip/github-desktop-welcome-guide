@@ -1,8 +1,12 @@
 class Canvas {
     constructor() {
-        this.textArea = document.getElementById('canvas-text');
-        this.exportButton = document.getElementById('export-json');
-        this.setupEventListeners();
+        document.addEventListener('DOMContentLoaded', () => {
+            this.textArea = document.getElementById('modal-canvas-text');
+            this.exportButton = document.getElementById('export-canvas');
+            if (this.exportButton) {
+                this.setupEventListeners();
+            }
+        });
     }
 
     setupEventListeners() {
@@ -11,12 +15,14 @@ class Canvas {
 
     // Get the current canvas text content
     getContent() {
-        return this.textArea.value.trim();
+        return this.textArea ? this.textArea.value.trim() : '';
     }
 
     // Set the canvas text content
     setContent(content) {
-        this.textArea.value = content;
+        if (this.textArea) {
+            this.textArea.value = content;
+        }
     }
 
     // Add text to the canvas
@@ -89,9 +95,4 @@ class Canvas {
 }
 
 // Create a global instance
-const canvas = new Canvas();
-
-// Initialize when the DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    // The Canvas instance is already created and ready to use
-});
+window.canvas = new Canvas();
