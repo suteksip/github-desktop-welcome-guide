@@ -1,93 +1,189 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="transition-colors duration-500">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connected Notes</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Connected Notes</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+    }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+      body {
+          font-family: 'Inter', sans-serif;
+          margin: 0;
+          padding: 0;
+          overflow-x: hidden;
+      }
+      #graph-view {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100vw;
+          height: 100vh;
+          z-index: -1;
+      }
+      nav {
+          position: fixed;
+          width: 100%;
+          z-index: 30;
+      }
+      main {
+          padding-top: 4.5rem;
+          position: relative;
+          z-index: 20;
+      }
+      /* Floating Action Button */
+      #fab-menu {
+          position: fixed;
+          bottom: 1.5rem;
+          right: 1.5rem;
+          background-color: #4F46E5;
+          color: white;
+          border-radius: 9999px;
+          width: 56px;
+          height: 56px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.5);
+          cursor: pointer;
+          z-index: 40;
+          transition: background-color 0.3s ease;
+      }
+      #fab-menu:hover {
+          background-color: #4338ca;
+      }
+      /* Floating Menu */
+      #fab-actions {
+          position: fixed;
+          bottom: 5.5rem;
+          right: 1.5rem;
+          display: flex;
+          flex-direction: column;
+          gap: 0.5rem;
+          z-index: 40;
+      }
+      #fab-actions button {
+          background-color: white;
+          color: #4F46E5;
+          padding: 0.5rem 1rem;
+          border-radius: 0.375rem;
+          box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+          cursor: pointer;
+          transition: background-color 0.3s ease;
+      }
+      #fab-actions button:hover {
+          background-color: #ede9fe;
+      }
+      /* Modal Overlay */
+      .modal-overlay {
+          position: fixed;
+          inset: 0;
+          background-color: rgba(0,0,0,0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 50;
+      }
+      /* Modal Content */
+      .modal-content {
+          background-color: white;
+          border-radius: 0.5rem;
+          padding: 1.5rem;
+          width: 90%;
+          max-width: 400px;
+          box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+      }
+      .dark .modal-content {
+          background-color: #1f2937;
+          color: white;
+      }
+  </style>
 </head>
-<body class="bg-gray-50">
-    <!-- Navigation -->
-    <nav class="bg-white shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex">
-                    <div class="flex-shrink-0 flex items-center">
-                        <h1 class="text-xl font-semibold text-gray-900">Connected Notes</h1>
-                    </div>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <div class="text-sm">
-                        <span class="text-gray-500">Total:</span>
-                        <span id="total-notes" class="ml-1 text-gray-900">0</span>
-                    </div>
-                    <div class="text-sm">
-                        <span class="text-gray-500">Connected:</span>
-                        <span id="connected-notes" class="ml-1 text-gray-900">0</span>
-                    </div>
-                    <div class="text-sm">
-                        <span class="text-gray-500">Unconnected:</span>
-                        <span id="unconnected-notes" class="ml-1 text-gray-900">0</span>
-                    </div>
-                </div>
-            </div>
+<body class="bg-gray-50 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-500">
+
+  <nav class="bg-white dark:bg-gray-800 shadow-sm">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
+          <h1 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Connected Notes</h1>
+          <div class="flex items-center space-x-4">
+              <div class="text-sm">
+                  <span class="text-gray-500 dark:text-gray-400">Total:</span>
+                  <span id="total-notes" class="ml-1 text-gray-900 dark:text-gray-100">0</span>
+              </div>
+              <div class="text-sm">
+                  <span class="text-gray-500 dark:text-gray-400">Connected:</span>
+                  <span id="connected-notes" class="ml-1 text-gray-900 dark:text-gray-100">0</span>
+              </div>
+              <div class="text-sm">
+                  <span class="text-gray-500 dark:text-gray-400">Unconnected:</span>
+                  <span id="unconnected-notes" class="ml-1 text-gray-900 dark:text-gray-100">0</span>
+              </div>
+              <button id="dark-mode-toggle" aria-label="Toggle Dark Mode" class="ml-4 p-2 rounded bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                <svg id="dark-mode-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-800 dark:text-gray-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path id="icon-path" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m8.66-9h-1M4.34 12h-1m15.07 5.07l-.7-.7M6.34 6.34l-.7-.7m12.02 12.02l-.7-.7M6.34 17.66l-.7-.7M12 7a5 5 0 000 10 5 5 0 000-10z" />
+                </svg>
+              </button>
+          </div>
+      </div>
+  </nav>
+
+  <canvas id="graph-view"></canvas>
+
+  <main class="floating-container bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm transition-colors duration-500">
+      <div id="notes-list" class="text-gray-900 dark:text-gray-100"></div>
+  </main>
+
+  <button id="fab-menu" aria-label="Open menu" title="Open menu">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+    </svg>
+  </button>
+
+  <div id="fab-actions" class="hidden">
+    <button id="open-addnote-modal">Add Note</button>
+    <button id="open-canvas-modal">Open Canvas</button>
+  </div>
+
+  <div id="addnote-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="addnote-modal-title">
+    <div class="modal-content">
+      <h2 id="addnote-modal-title" class="text-lg font-medium mb-4">Add New Note</h2>
+      <form id="modal-note-form" class="space-y-4">
+        <div>
+          <label for="modal-note-content" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Note Content</label>
+          <textarea id="modal-note-content" rows="4" class="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100"></textarea>
         </div>
-    </nav>
-
-    <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <!-- Note Input Section -->
-            <div class="space-y-6">
-                <div class="bg-white shadow-sm rounded-lg p-6">
-                    <h2 class="text-lg font-medium text-gray-900 mb-4">Add New Note</h2>
-                    <form id="note-form" class="space-y-4">
-                        <div>
-                            <label for="note-content" class="block text-sm font-medium text-gray-700">Note Content</label>
-                            <textarea id="note-content" rows="4" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500"></textarea>
-                        </div>
-                        <div>
-                            <label for="note-source" class="block text-sm font-medium text-gray-700">Source (optional)</label>
-                            <input type="text" id="note-source" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500">
-                        </div>
-                        <button type="submit" class="w-full bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors">Add Note</button>
-                    </form>
-                </div>
-
-                <!-- Canvas Text Feature -->
-                <div class="bg-white shadow-sm rounded-lg p-6">
-                    <h2 class="text-lg font-medium text-gray-900 mb-4">Canvas Text</h2>
-                    <div class="space-y-4">
-                        <textarea id="canvas-text" rows="4" class="block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500"></textarea>
-                        <button id="export-json" class="w-full bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700">Export as JSON</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Notes Display and Graph Section -->
-            <div class="space-y-6">
-                <div class="bg-white shadow-sm rounded-lg p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-lg font-medium text-gray-900">Notes</h2>
-                        <a href="graph.html" class="text-sm bg-gray-100 px-3 py-1 rounded-md hover:bg-gray-200">View Graph</a>
-                    </div>
-                    <div id="notes-list" class="space-y-4"></div>
-                </div>
-            </div>
+        <div>
+          <label for="modal-note-source" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Source (optional)</label>
+          <input type="text" id="modal-note-source" class="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100" />
         </div>
-    </main>
+        <div class="flex justify-end space-x-2">
+          <button type="button" id="close-addnote-modal" class="px-4 py-2 bg-gray-300 dark:bg-gray-600 rounded hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors">Cancel</button>
+          <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors">Submit</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
-    <script src="js/helpers.js"></script>
-    <script src="js/noteModel.js"></script>
-    <script src="js/graph.js"></script>
-    <script src="js/navigation.js"></script>
-    <script src="js/canvas.js"></script>
-    <script src="js/main.js"></script>
+  <div id="canvas-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="canvas-modal-title">
+    <div class="modal-content">
+      <h2 id="canvas-modal-title" class="text-lg font-medium mb-4">Canvas Text</h2>
+      <textarea id="modal-canvas-text" rows="4" class="block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-gray-100"></textarea>
+      <div class="flex justify-end space-x-2 mt-4">
+        <button type="button" id="close-canvas-modal" class="px-4 py-2 bg-gray-300 dark:bg-gray-600 rounded hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors">Cancel</button>
+        <button type="button" id="export-canvas" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors">Export as JSON</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/helpers.js"></script>
+  <script src="js/noteModel.js"></script>
+  <script src="js/navigation.js"></script>
+  <script src="js/canvas.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/graph.js"></script>
 </body>
 </html>
