@@ -1,142 +1,27 @@
 class App {
     constructor() {
-        // Wait for DOM to be fully loaded before initialization
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => this.init());
-        } else {
-            this.init();
-        }
-    }
-
-    init() {
-        // Initialize dark mode
-        this.setupDarkMode();
-        
-        // Initialize UI elements
-        this.notesList = document.getElementById('notes-list');
-        this.fabMenu = document.getElementById('fab-menu');
-        this.fabActions = document.getElementById('fab-actions');
-        this.addNoteModal = document.getElementById('addnote-modal');
-        this.canvasModal = document.getElementById('canvas-modal');
-        this.modalNoteForm = document.getElementById('modal-note-form');
-        
-        // Only setup event listeners if all required elements are found
-        if (this.notesList && this.fabMenu && this.fabActions && 
-            this.addNoteModal && this.canvasModal && this.modalNoteForm) {
+        document.addEventListener('DOMContentLoaded', () => {
+            this.noteForm = document.getElementById('modal-note-form');
+            this.notesList = document.getElementById('notes-list');
             this.setupEventListeners();
             this.renderNotes();
-        } else {
-            console.error('Required UI elements not found');
-        }
-    }
-
-    setupDarkMode() {
-        const toggleButton = document.getElementById('dark-mode-toggle');
-        const rootElement = document.documentElement;
-        const iconPath = document.getElementById('icon-path');
-
-        if (!toggleButton || !iconPath) return;
-
-        // Set initial dark mode state
-        const savedMode = localStorage.getItem('darkMode');
-        if (savedMode === 'dark') {
-            rootElement.classList.add('dark');
-            iconPath.setAttribute('d', 'M12 3v1m0 16v1m8.66-9h-1M4.34 12h-1m15.07 5.07l-.7-.7M6.34 6.34l-.7-.7m12.02 12.02l-.7-.7M6.34 17.66l-.7-.7M12 7a5 5 0 000 10 5 5 0 000-10z');
-        }
-
-        // Toggle dark mode
-        toggleButton.addEventListener('click', () => {
-            rootElement.classList.toggle('dark');
-            const isDark = rootElement.classList.contains('dark');
-            localStorage.setItem('darkMode', isDark ? 'dark' : 'light');
-            iconPath.setAttribute('d', isDark 
-                ? 'M12 3v1m0 16v1m8.66-9h-1M4.34 12h-1m15.07 5.07l-.7-.7M6.34 6.34l-.7-.7m12.02 12.02l-.7-.7M6.34 17.66l-.7-.7M12 7a5 5 0 000 10 5 5 0 000-10z'
-                : 'M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z'
-            );
+            
+            // Initial graph update
+            if (window.graph) {
+                window.graph.updateGraph();
+            }
         });
     }
 
     setupEventListeners() {
-        // FAB Menu toggle
-        this.fabMenu.addEventListener('click', () => {
-            this.fabActions.classList.toggle('hidden');
-        });
-
-        // Open Add Note modal
-        const openAddNoteBtn = document.getElementById('open-addnote-modal');
-        if (openAddNoteBtn) {
-            openAddNoteBtn.addEventListener('click', () => {
-                this.fabActions.classList.add('hidden');
-                this.addNoteModal.classList.remove('hidden');
-                document.getElementById('modal-note-content').value = '';
-                document.getElementById('modal-note-source').value = '';
-            });
-        }
-
-        // Open Canvas modal
-        const openCanvasBtn = document.getElementById('open-canvas-modal');
-        if (openCanvasBtn) {
-            openCanvasBtn.addEventListener('click', () => {
-                this.fabActions.classList.add('hidden');
-                this.canvasModal.classList.remove('hidden');
-                const modalCanvasText = document.getElementById('modal-canvas-text');
-                if (window.canvas && modalCanvasText) {
-                    modalCanvasText.value = window.canvas.getContent();
-                }
-            });
-        }
-
-        // Close modals
-        const closeAddNoteBtn = document.getElementById('close-addnote-modal');
-        if (closeAddNoteBtn) {
-            closeAddNoteBtn.addEventListener('click', () => {
-                this.addNoteModal.classList.add('hidden');
-            });
-        }
-
-        const closeCanvasBtn = document.getElementById('close-canvas-modal');
-        if (closeCanvasBtn) {
-            closeCanvasBtn.addEventListener('click', () => {
-                this.canvasModal.classList.add('hidden');
-            });
-        }
-
         // Handle note form submission
-        this.modalNoteForm.addEventListener('submit', (e) => {
+        this.noteForm?.addEventListener('submit', (e) => {
             e.preventDefault();
             this.handleNoteSubmission();
         });
 
-        // Handle canvas export
-        const exportCanvasBtn = document.getElementById('export-canvas');
-        if (exportCanvasBtn) {
-            exportCanvasBtn.addEventListener('click', () => {
-                this.handleCanvasExport();
-            });
-        }
-
-        // Close modals when clicking outside
-        document.addEventListener('click', (e) => {
-            if (e.target.classList.contains('modal-overlay')) {
-                this.addNoteModal.classList.add('hidden');
-                this.canvasModal.classList.add('hidden');
-            }
-            if (!e.target.closest('#fab-menu') && !e.target.closest('#fab-actions')) {
-                this.fabActions.classList.add('hidden');
-            }
-        });
-
-        // Handle escape key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                this.addNoteModal.classList.add('hidden');
-                this.canvasModal.classList.add('hidden');
-                this.fabActions.classList.add('hidden');
-            }
-        });
-
         // Handle note deletion and canvas append
-        this.notesList.addEventListener('click', (e) => {
+        this.notesList?.addEventListener('click', (e) => {
             const noteElement = e.target.closest('.note-item');
             if (!noteElement) return;
 
@@ -146,6 +31,84 @@ class App {
                 this.handleAppendToCanvas(noteElement.dataset.noteId);
             }
         });
+
+        // Close modals when clicking outside
+        document.addEventListener('click', (e) => {
+            const addNoteModal = document.getElementById('addnote-modal');
+            const canvasModal = document.getElementById('canvas-modal');
+            const fabActions = document.getElementById('fab-actions');
+
+            if (e.target.classList.contains('modal-overlay')) {
+                addNoteModal?.classList.add('hidden');
+                canvasModal?.classList.add('hidden');
+            }
+
+            if (!e.target.closest('#fab-menu') && !e.target.closest('#fab-actions')) {
+                fabActions?.classList.add('hidden');
+            }
+        });
+
+        // Handle escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const addNoteModal = document.getElementById('addnote-modal');
+                const canvasModal = document.getElementById('canvas-modal');
+                const fabActions = document.getElementById('fab-actions');
+                
+                addNoteModal?.classList.add('hidden');
+                canvasModal?.classList.add('hidden');
+                fabActions?.classList.add('hidden');
+            }
+        });
+
+        // FAB Menu toggle
+        const fabMenu = document.getElementById('fab-menu');
+        const fabActions = document.getElementById('fab-actions');
+        fabMenu?.addEventListener('click', () => {
+            fabActions?.classList.toggle('hidden');
+        });
+
+        // Open Add Note modal
+        const openAddNoteBtn = document.getElementById('open-addnote-modal');
+        openAddNoteBtn?.addEventListener('click', () => {
+            const addNoteModal = document.getElementById('addnote-modal');
+            fabActions?.classList.add('hidden');
+            addNoteModal?.classList.remove('hidden');
+            document.getElementById('modal-note-content').value = '';
+            document.getElementById('modal-note-source').value = '';
+        });
+
+        // Open Canvas modal
+        const openCanvasBtn = document.getElementById('open-canvas-modal');
+        openCanvasBtn?.addEventListener('click', () => {
+            const canvasModal = document.getElementById('canvas-modal');
+            const modalCanvasText = document.getElementById('modal-canvas-text');
+            fabActions?.classList.add('hidden');
+            if (window.canvas && modalCanvasText) {
+                modalCanvasText.value = window.canvas.getContent();
+            }
+            canvasModal?.classList.remove('hidden');
+        });
+
+        // Close modals
+        const closeAddNoteBtn = document.getElementById('close-addnote-modal');
+        const closeCanvasBtn = document.getElementById('close-canvas-modal');
+        
+        closeAddNoteBtn?.addEventListener('click', () => {
+            const addNoteModal = document.getElementById('addnote-modal');
+            addNoteModal?.classList.add('hidden');
+        });
+
+        closeCanvasBtn?.addEventListener('click', () => {
+            const canvasModal = document.getElementById('canvas-modal');
+            canvasModal?.classList.add('hidden');
+        });
+
+        // Handle canvas export
+        const exportCanvasBtn = document.getElementById('export-canvas');
+        exportCanvasBtn?.addEventListener('click', () => {
+            this.handleCanvasExport();
+        });
     }
 
     handleNoteSubmission() {
@@ -154,30 +117,28 @@ class App {
 
         try {
             noteModel.addNote(content, source);
-            this.modalNoteForm.reset();
-            this.addNoteModal.classList.add('hidden');
+            
+            // Clear form
+            if (document.getElementById('modal-note-content')) {
+                document.getElementById('modal-note-content').value = '';
+            }
+            if (document.getElementById('modal-note-source')) {
+                document.getElementById('modal-note-source').value = '';
+            }
+            document.getElementById('addnote-modal')?.classList.add('hidden');
+
+            // Update UI
             this.renderNotes();
             navigation.updateCounters();
-            if (window.graph && typeof graph.updateGraph === 'function') {
-                graph.updateGraph();
+            
+            // Update graph
+            if (window.graph) {
+                window.graph.updateGraph();
             }
+
         } catch (error) {
             console.error(error);
             alert(error.message);
-        }
-    }
-
-    handleCanvasExport() {
-        try {
-            const modalCanvasText = document.getElementById('modal-canvas-text');
-            if (window.canvas && modalCanvasText) {
-                window.canvas.setContent(modalCanvasText.value);
-                window.canvas.exportToJson();
-                this.canvasModal.classList.add('hidden');
-            }
-        } catch (error) {
-            console.error(error);
-            alert('Failed to export canvas: ' + error.message);
         }
     }
 
@@ -186,8 +147,10 @@ class App {
             noteModel.deleteNote(noteId);
             this.renderNotes();
             navigation.updateCounters();
-            if (window.graph && typeof graph.updateGraph === 'function') {
-                graph.updateGraph();
+            
+            // Update graph
+            if (window.graph) {
+                window.graph.updateGraph();
             }
         }
     }
@@ -200,7 +163,21 @@ class App {
             if (modalCanvasText) {
                 modalCanvasText.value = window.canvas.getContent();
             }
-            this.canvasModal.classList.remove('hidden');
+            document.getElementById('canvas-modal')?.classList.remove('hidden');
+        }
+    }
+
+    handleCanvasExport() {
+        try {
+            const modalCanvasText = document.getElementById('modal-canvas-text');
+            if (window.canvas && modalCanvasText) {
+                window.canvas.setContent(modalCanvasText.value);
+                window.canvas.exportToJson();
+                document.getElementById('canvas-modal')?.classList.add('hidden');
+            }
+        } catch (error) {
+            console.error(error);
+            alert('Failed to export canvas: ' + error.message);
         }
     }
 
@@ -276,7 +253,5 @@ class App {
     }
 }
 
-// Create global instance
-document.addEventListener('DOMContentLoaded', () => {
-    window.appInstance = new App();
-});
+// Initialize the application
+window.appInstance = new App();
